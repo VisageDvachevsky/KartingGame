@@ -17,13 +17,16 @@ namespace Project.GameFlow
             public override void OnEnter()
             {
                 base.OnEnter();
+
                 _display.Activate();
             }
 
             public override void OnUpdate()
             {
                 base.OnUpdate();
-                if (!_display.Active) TransitTo<RacingState>();
+
+                if (!_display.Active)
+                    TransitTo<RacingState>();
             }
         }
     }

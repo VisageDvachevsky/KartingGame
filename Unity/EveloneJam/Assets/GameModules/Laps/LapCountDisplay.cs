@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Project.Kart;
 using Project.RoadGeneration;
 using TMPro;
@@ -9,7 +10,6 @@ namespace Project.Laps
     public class LapCountDisplay : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _text;
-
 
         private PlayerKartProvider _kartProvider;
         private CheckpointCounter _checkpointCounter;
@@ -32,10 +32,10 @@ namespace Project.Laps
 
         private void Update()
         {
-            if (_checkpointCounter != null)
-            {
-                UpdateLapsAmount();
-            }
+            if (_checkpointCounter == null)
+                return;
+
+            UpdateLapsAmount();
         }
 
         private void SyncKart(KartController kart)
@@ -45,7 +45,15 @@ namespace Project.Laps
 
         private void UpdateLapsAmount()
         {
-            _text.text = $"{_checkpointCounter.LapsFinished}/{_checkpointCounter.LapCount}";
+            string newValue = $"{_checkpointCounter.LapsFinished}/{_checkpointCounter.LapCount}";
+
+            if (newValue == _text.text)
+                return;
+
+            _text.transform.DOComplete();
+            _text.transform.localScale = Vector3.one;
+            _text.transform.DOPunchScale(Vector3.one * 1.2f, .2f, 5, 1);
+            _text.text = newValue;
         }
     }
 }

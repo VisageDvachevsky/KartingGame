@@ -29,15 +29,15 @@ namespace Project.Kart
         {
             _defaultFOV = _camera.FOV;
             if (_postProcessing.profile.TryGet<ChromaticAberration>(out var effect))
-            {
                 _defaultChromaticAberration = effect.intensity.value;
-            }
         }
 
         private void Update()
         {
             KartController kart = _kartProvider.Kart;
-            if (kart == null) return;
+
+            if (kart == null)
+                return;
 
             float targetFOV = kart.InBoost ? _boostFOV : _defaultFOV;
             float targetAberration = kart.InBoost ? _boostChromaticAberration : _defaultChromaticAberration;
@@ -45,9 +45,7 @@ namespace Project.Kart
             _camera.FOV = Mathf.Lerp(_camera.FOV, targetFOV, Time.deltaTime * 10f);
 
             if (_postProcessing.profile.TryGet<ChromaticAberration>(out var effect))
-            {
                 effect.intensity.value = Mathf.Lerp(effect.intensity.value, targetAberration, Time.deltaTime * 10f);
-            }
         }
     }
 }

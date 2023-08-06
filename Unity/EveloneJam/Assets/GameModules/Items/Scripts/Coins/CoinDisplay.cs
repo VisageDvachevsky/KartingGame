@@ -1,8 +1,9 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using Zenject;
 
-namespace Project.Coins
+namespace Project.Interaction
 {
     public class CoinDisplay : MonoBehaviour
     {
@@ -33,7 +34,16 @@ namespace Project.Coins
 
         private void UpdateCoinsAmount(int amount)
         {
-            _text.text = amount.ToString();
+            string newValue = amount.ToString();
+
+            if (newValue == _text.text)
+                return;
+
+            _text.transform.DOComplete();
+            _text.transform.localScale = Vector3.one;
+            _text.transform.DOPunchScale(Vector3.one * 1.2f, .2f, 5, 1);
+            _text.text = newValue;
+
         }
     }
 }

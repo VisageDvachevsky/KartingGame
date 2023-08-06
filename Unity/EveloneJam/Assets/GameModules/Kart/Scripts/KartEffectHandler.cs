@@ -15,7 +15,8 @@ namespace Project.Kart
 
         public void AddEffect(KartEffect kartEffect)
         {
-            if (CurrentEffect != null) return;
+            if (CurrentEffect != null)
+                return;
 
             CurrentEffect = kartEffect;
             EffectStartTime = Time.time;
@@ -24,15 +25,15 @@ namespace Project.Kart
 
         private void HandleEffect()
         {
-            if (CurrentEffect != null)
-            {
-                CurrentEffect.Execute(Kart);
+            if (CurrentEffect == null)
+                return;
 
-                if (Time.time - EffectStartTime >= CurrentEffect.Duration)
-                {
-                    CurrentEffect.Deactivate(Kart);
-                    CurrentEffect = null;
-                }
+            CurrentEffect.Execute(Kart);
+
+            if (Time.time - EffectStartTime >= CurrentEffect.Duration)
+            {
+                CurrentEffect.Deactivate(Kart);
+                CurrentEffect = null;
             }
         }
     }

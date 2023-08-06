@@ -1,8 +1,8 @@
-using Project.Interaction;
 using Project.Kart;
+using TMPro;
 using Zenject;
 
-namespace Project.Coins
+namespace Project.Interaction
 {
     public class Coin : BasePickup
     {
@@ -16,7 +16,11 @@ namespace Project.Coins
 
         public override void Pickup(KartController sender)
         {
+            if (!sender.IsPlayer)
+                return;
+
             base.Pickup(sender);
+
             _coinSystem.AddCoin();
         }
     }

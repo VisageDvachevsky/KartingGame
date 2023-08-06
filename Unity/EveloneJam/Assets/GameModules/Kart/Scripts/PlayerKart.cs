@@ -39,7 +39,6 @@ namespace Project.Kart
 
         private void SetAutopilot()
         {
-            Debug.Log("autopilot");
             _kart.SetInput(_ai);
         }
     }

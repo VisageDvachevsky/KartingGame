@@ -19,7 +19,8 @@ namespace Project.Kart
         private void Update()
         {
             KartController kart = _kartProvider.Kart;
-            if (kart == null) return;
+            if (kart == null)
+                return;
 
             _fill.fillAmount = kart.RemainingBoostTime / kart.MaxBoostTime;
         }

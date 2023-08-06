@@ -1,7 +1,8 @@
+using System;
 using UnityEngine;
 using UnityEngine.Audio;
 
-public partial class SettingsManager : MonoBehaviour
+public class SettingsManager : MonoBehaviour
 {
     private const string SettingsDataKey = "SettingsData";
     private const string MasterAudioChannel = "Master";
@@ -18,6 +19,7 @@ public partial class SettingsManager : MonoBehaviour
     public float CurrentSoundVolume { get; private set; } = 0f;
     public float CurrentMusicVolume { get; private set; } = 0f;
     public float CurrentBrightness { get; private set; } = 0.5f;
+    public int CurrentGraphicsLevel { get; private set; } = 2;
     
     private void Awake()
     {
@@ -64,6 +66,12 @@ public partial class SettingsManager : MonoBehaviour
         RenderSettings.ambientIntensity = value;
     }
 
+    public void UpdateGraphicsLevel(int value)
+    {
+        CurrentGraphicsLevel = value;
+        QualitySettings.SetQualityLevel(value);
+    }
+
     public void SaveChanges()
     {
         SettingsData settingsData = new SettingsData
@@ -71,7 +79,8 @@ public partial class SettingsManager : MonoBehaviour
             soundVolume = CurrentSoundVolume,
             musicVolume = CurrentMusicVolume,
             overallVolume = CurrentMasterVolume,
-            brightness = CurrentBrightness
+            brightness = CurrentBrightness,
+            graphicsLevel = CurrentGraphicsLevel,
         };
 
         string json = JsonUtility.ToJson(settingsData);
@@ -90,6 +99,7 @@ public partial class SettingsManager : MonoBehaviour
             CurrentMusicVolume = settingsData.musicVolume;
             CurrentMasterVolume = settingsData.overallVolume;
             CurrentBrightness = settingsData.brightness;
+            CurrentGraphicsLevel = settingsData.graphicsLevel;
         }
     }
 
@@ -99,5 +109,6 @@ public partial class SettingsManager : MonoBehaviour
         UpdateMusicVolume(CurrentMusicVolume);
         UpdateMasterVolume(CurrentMasterVolume);
         UpdateBrightness(CurrentBrightness);
+        UpdateGraphicsLevel(CurrentGraphicsLevel);
     }
 }

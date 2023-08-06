@@ -12,41 +12,52 @@ namespace Project.Kart
     {
         private const float ACCELERATION_MULTIPLIER = 1000f;
 
+        [Header("Kart")]
         [SerializeField] private KartTrigger _kartTrigger;
         [SerializeField] private Transform _model;
         [SerializeField] private Transform _groundRayPoint;
         [SerializeField] private float _groundRayLength = 0.1f;
         [SerializeField] private LayerMask _groundMask = Physics.DefaultRaycastLayers;
+
         [Header("Boost")]
         [SerializeField] private float _maxBoostTime = 8f;
         [SerializeField] private float _boostAccumulationSpeed = 2f;
+        [SerializeField] public float BoostAccelMultiplier = 2f;
+
         [Header("Settings")]
         [SerializeField] public float ForwardAccel = 8f;
         [SerializeField] public float ReverseAccel = 4f;
+
+        [Header("Drift")]
         [SerializeField] public float DriftSteering = 3f;
         [SerializeField] public float DriftAccel = 10f;
-        [SerializeField] public float BoostAccelMultiplier = 2f;
-        [SerializeField] public float AutoStopping = 5f;
-        [SerializeField] public float GravityForce = 10f;
-        [SerializeField] public float TurningStrength = 180f;
-        [SerializeField] public float TurningDebaf = 0.01f;
         [SerializeField] public float JumpHeight = 0.2f;
         [SerializeField] public float DriftAngle = 20f;
-        [SerializeField] public float DragOnGround = 3f;
-        [SerializeField] public float MinHitSpeed = 3f;
+
+        [Header("Steering")]
+        [SerializeField] public float TurningStrength = 180f;
+        [SerializeField] public float TurningDebaf = 0.01f;
+
+        [Header("Effects")]
         [SerializeField] public float HitKnockbackStrength = 3f;
         [SerializeField] public float SpinningAngularSpeed = 360f;
 
-        public event Action OnHit;
+        [Header("Ground collision")]
+        [SerializeField] public float DragOnGround = 3f;
+        [SerializeField] public float GravityForce = 10f;
+        [SerializeField] public float MinHitSpeed = 3f;
 
         private CheckpointCounter _checkpointCounter;
         private KartEffectHandler _effectHandler;
         private ItemBoxSystem _itemBoxSystem;
-        private IKartInput _kartInput;
+        private KartSkin _kartSkin;
+
         private Rigidbody _sphereRb;
         private float _speedInput;
         private float _currentSpeed;
         private float _remainingBoostTime;
+
+        public event Action OnHit;
 
         public CheckpointCounter CheckpointCounter
         {
@@ -55,7 +66,6 @@ namespace Project.Kart
                 return _checkpointCounter;
             }
         }
-
         public KartEffectHandler EffectHandler
         {
             get
@@ -64,7 +74,6 @@ namespace Project.Kart
                 return _effectHandler;
             }
         }
-
         public ItemBoxSystem ItemBoxSystem
         {
             get
@@ -73,7 +82,15 @@ namespace Project.Kart
                 return _itemBoxSystem;
             }
         }
-
+        public KartSkin KartSkin
+        {
+            get
+            {
+                if (!_kartSkin) _kartSkin = GetComponentInChildren<KartSkin>();
+                return _kartSkin;
+            }
+        }
+        public IKartInput KartInput { get; private set; }
         public Vector3 CurrentVelocity => transform.InverseTransformDirection(_sphereRb.velocity);
         public float CurrentSteering { get; private set; }
         public bool IsGrounded { get; private set; }
@@ -86,13 +103,12 @@ namespace Project.Kart
             set => _remainingBoostTime = Mathf.Clamp(value, 0, _maxBoostTime);
         }
         public bool DisableInput { get; set; } = false;
-        public bool IsPlayer => _kartInput.IsPlayer;
+        public bool IsPlayer { get; set; } = false;
         public bool IsSpinning { get; set; } = false;
         public Transform Model => _model;
 
-        private float Horizontal => DisableInput ? 0f : _kartInput.GetHorizontal();
-        private float Vertical => DisableInput ? 0f : _kartInput.GetVertical();
-
+        private float Horizontal => DisableInput ? 0f : KartInput.GetHorizontal();
+        private float Vertical => DisableInput ? 0f : KartInput.GetVertical();
 
         private void Start()
         {
@@ -103,7 +119,6 @@ namespace Project.Kart
             ItemBoxSystem.Kart = this;
             _kartTrigger.Kart = this;
 
-
             RemainingBoostTime = _maxBoostTime;
 
             _sphereRb = _kartTrigger.Rigidbody;
@@ -113,57 +128,23 @@ namespace Project.Kart
         private void Update()
         {
             transform.position = _sphereRb.transform.position;
-            if (IsSpinning)
-            {
-                _model.localRotation = Quaternion.Euler(0, _model.localEulerAngles.y + SpinningAngularSpeed * Time.deltaTime, 0);
-            }
-            else
-            {
-                _model.localRotation = Quaternion.Slerp(_model.localRotation, Quaternion.Euler(0, DriftDirection * DriftAngle, 0), Time.deltaTime * 4f);
-            }
+
+            RotateModel();
 
             float verticalInput = Vertical;
             float horizontalInput = Horizontal;
             _speedInput = CalculateTargetSpeed(verticalInput);
             _currentSpeed = _speedInput;
 
-            if (RemainingBoostTime > 0f && verticalInput > 0f && DriftDirection == 0 && _kartInput.GetBoostButtonPressed())
-            {
-                InBoost = true;
-                RemainingBoostTime -= Time.deltaTime;
-                if (RemainingBoostTime < 0f) RemainingBoostTime = 0f;
-            }
-            else
-            {
-                InBoost = false;
-            }
-
-            if (InDrift)
-            {
-                RemainingBoostTime += _boostAccumulationSpeed * Time.deltaTime;
-                if (RemainingBoostTime > _maxBoostTime) RemainingBoostTime = _maxBoostTime;
-            }
-
-
-            if (DriftDirection == 0 && _kartInput.GetJumpButtonDown() && CurrentVelocity.z > 10f)
-            {
-                if (horizontalInput < 0f) DriftDirection = -1;
-                else if (horizontalInput > 0f) DriftDirection = 1;
-
-                if (DriftDirection != 0)
-                {
-                    _model.DOComplete();
-                    _model.DOPunchPosition(transform.up * JumpHeight, .3f, 5, 1);
-                }
-            }
-            if (DriftDirection != 0 && (_kartInput.GetJumpButtonUp() || CurrentVelocity.z < 10f))
-            {
-                DriftDirection = 0;
-            }
-
+            Boost(verticalInput);
+            Drift(horizontalInput);
             Turn(verticalInput, horizontalInput);
+            TryActivateItem();
+        }
 
-            if (!DisableInput && _kartInput.GetItemButtomDown())
+        private void TryActivateItem()
+        {
+            if (!DisableInput && KartInput.GetItemButtomDown())
             {
                 _itemBoxSystem.ActivateCurrentItem();
             }
@@ -186,13 +167,13 @@ namespace Project.Kart
             else
             {
                 _sphereRb.drag = 0.1f;
-                _sphereRb.AddForce(Vector3.up * -GravityForce * ACCELERATION_MULTIPLIER);
+                _sphereRb.AddForce(ACCELERATION_MULTIPLIER * -GravityForce * Vector3.up);
             }
         }
 
         public void SetInput(IKartInput kartInput)
         {
-            _kartInput = kartInput;
+            KartInput = kartInput;
         }
 
         public void CollideWithOtherKart(Vector3 normal, Vector3 relativeVelocity)
@@ -222,17 +203,63 @@ namespace Project.Kart
             Vector3 closestPoint = nextCheckpoint.WorldPosition;
             Vector3 targetDirection = closestPoint - transform.position;
 
-            transform.rotation =  Quaternion.LookRotation(targetDirection);
+            transform.rotation = Quaternion.LookRotation(targetDirection);
 
             if (relativeVelocity.magnitude < MinHitSpeed) return;
 
             normal.y = 0f;
             normal.Normalize();
-            
+
             _sphereRb.velocity = new Vector3(normal.x * HitKnockbackStrength, _sphereRb.velocity.y, normal.z * HitKnockbackStrength);
 
 
             OnHit?.Invoke();
+        }
+
+        private void Drift(float horizontalInput)
+        {
+            if (!DisableInput && DriftDirection == 0 && KartInput.GetJumpButtonDown() && CurrentVelocity.z > 10f)
+            {
+                if (horizontalInput < 0f) DriftDirection = -1;
+                else if (horizontalInput > 0f) DriftDirection = 1;
+
+                if (DriftDirection != 0)
+                {
+                    _model.DOComplete();
+                    _model.DOPunchPosition(transform.up * JumpHeight, .3f, 5, 1);
+                }
+            }
+
+            if (DriftDirection != 0 && (DisableInput || KartInput.GetJumpButtonUp() || CurrentVelocity.z < 10f))
+                DriftDirection = 0;
+        }
+
+        private void Boost(float verticalInput)
+        {
+            if (!DisableInput && RemainingBoostTime > 0f && verticalInput > 0f && DriftDirection == 0 && KartInput.GetBoostButtonPressed())
+            {
+                InBoost = true;
+                RemainingBoostTime -= Time.deltaTime;
+                if (RemainingBoostTime < 0f) RemainingBoostTime = 0f;
+            }
+            else
+            {
+                InBoost = false;
+            }
+
+            if (InDrift)
+            {
+                RemainingBoostTime += _boostAccumulationSpeed * Time.deltaTime;
+                if (RemainingBoostTime > _maxBoostTime) RemainingBoostTime = _maxBoostTime;
+            }
+        }
+
+        private void RotateModel()
+        {
+            if (IsSpinning)
+                _model.localRotation = Quaternion.Euler(0, _model.localEulerAngles.y + SpinningAngularSpeed * Time.deltaTime, 0);
+            else
+                _model.localRotation = Quaternion.Slerp(_model.localRotation, Quaternion.Euler(0, DriftDirection * DriftAngle, 0), Time.deltaTime * 4f);
         }
 
         private bool RaycastGround(out RaycastHit hit)

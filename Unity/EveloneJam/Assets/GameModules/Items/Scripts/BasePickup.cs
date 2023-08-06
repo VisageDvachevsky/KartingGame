@@ -13,8 +13,6 @@ namespace Project.Interaction
         [SerializeField] private ParticleSystem _pickupParticles;
         [SerializeField] private AudioSource _audio;
 
-        public virtual bool PlayerOnly => true;
-
         private void Update()
         {
             _model.Rotate(0, _rotationSpeed * Time.deltaTime, 0, Space.Self);
@@ -22,9 +20,10 @@ namespace Project.Interaction
 
         public virtual void Pickup(KartController sender)
         {
-            HideAndRespawn();
             _audio.Play();
             _pickupParticles.Play();
+
+            HideAndRespawn();
         }
 
         private void HideAndRespawn()

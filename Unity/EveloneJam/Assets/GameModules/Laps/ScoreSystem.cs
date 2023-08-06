@@ -62,6 +62,7 @@ namespace Project.Laps
         private void Update()
         {
             IReadOnlyList<RoadCheckpoint> checkpoints = _roadProvider.Checkpoints;
+
             for (int i = 0; i < _scoreDatas.Count; i++)
             {
                 CheckpointCounter counter = _scoreDatas[i].CheckpointCounter;

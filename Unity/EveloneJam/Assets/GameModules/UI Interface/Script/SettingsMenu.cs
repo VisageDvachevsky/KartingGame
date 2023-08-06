@@ -1,4 +1,6 @@
 using DG.Tweening;
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -10,6 +12,7 @@ public class SettingsMenu : MonoBehaviour
     [SerializeField] private Slider _musicVolumeSlider;
     [SerializeField] private Slider _masterVolumeSlider;
     [SerializeField] private Slider _brightnessSlider;
+    [SerializeField] private TMP_Dropdown _graphicsLevelDropdown;
 
     private bool _opened = false;
     private SettingsManager _settingsManager;
@@ -22,8 +25,9 @@ public class SettingsMenu : MonoBehaviour
         _musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeSliderValueChanged);
         _masterVolumeSlider.onValueChanged.AddListener(OnOverallVolumeSliderValueChanged);
         _brightnessSlider.onValueChanged.AddListener(OnBrightnessSliderValueChanged);
+        _graphicsLevelDropdown.onValueChanged.AddListener(OnGraphicsLevelChanged);
 
-        InitSliders();
+        Init();
 
         _opened = false;
         _container.SetActive(false);
@@ -48,12 +52,19 @@ public class SettingsMenu : MonoBehaviour
         _opened = false;
     }
 
-    private void InitSliders()
+    private void Init()
     {
         _soundVolumeSlider.value = _settingsManager.CurrentSoundVolume;
         _musicVolumeSlider.value = _settingsManager.CurrentMusicVolume;
         _masterVolumeSlider.value = _settingsManager.CurrentMasterVolume;
         _brightnessSlider.value = _settingsManager.CurrentBrightness;
+        _graphicsLevelDropdown.SetValueWithoutNotify(_settingsManager.CurrentGraphicsLevel);
+    }
+
+    private void OnGraphicsLevelChanged(int value)
+    {
+        _settingsManager.UpdateGraphicsLevel(value);
+        _settingsManager.SaveChanges();
     }
 
     private void OnBrightnessSliderValueChanged(float value)

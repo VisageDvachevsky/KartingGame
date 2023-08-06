@@ -1,5 +1,4 @@
 using Project.Camera;
-using Project.Coins;
 using Project.GameFlow;
 using Project.Interaction;
 using Project.Kart;

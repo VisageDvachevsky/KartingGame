@@ -4,8 +4,9 @@
 [Serializable]
 public class SettingsData
 {
-    public float soundVolume;
-    public float musicVolume;
-    public float overallVolume;
-    public float brightness;
+    public int graphicsLevel = 2;
+    public float soundVolume = 0;
+    public float musicVolume = 0;
+    public float overallVolume = 0;
+    public float brightness = .5f;
 }

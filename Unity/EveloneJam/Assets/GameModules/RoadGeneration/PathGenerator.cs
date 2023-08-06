@@ -32,15 +32,19 @@ namespace ARTEX.Procedural.Racing
         [SerializeField] private bool _drawFullPath = false;
         [SerializeField] private bool _drawCleanedPath = false;
 
+        private readonly List<Vector3Int> _points = new List<Vector3Int>();
+        private readonly List<int> _rawPath = new List<int>();
+        private readonly List<Vector3Int> _path = new List<Vector3Int>();
+        private readonly List<Vector3Int> _cleanedPath = new List<Vector3Int>();
+        private readonly HashSet<Vector3Int> _pathConflicts = new HashSet<Vector3Int>();
+
         private bool _hasPath = false;
-        private List<Vector3Int> _points = new List<Vector3Int>();
         private Vector3 _leftRaw;
         private Vector3 _rightRaw;
-        private List<int> _rawPath = new List<int>();
-        private List<Vector3Int> _path = new List<Vector3Int>();
-        private HashSet<Vector3Int> _pathConflicts = new HashSet<Vector3Int>();
-        private List<Vector3Int> _cleanedPath = new List<Vector3Int>();
         private int _firstPath = 0;
+
+        public int Width => _width;
+        public int Length => _length;
 
         public List<Vector3Int> GeneratePath()
         {
@@ -171,9 +175,11 @@ namespace ARTEX.Procedural.Racing
         {
             _path.Clear();
 
-            GridGraph map = new GridGraph(_width, _length);
-            map.Walls = new List<Vector2>();
-            map.Forests = new List<Vector2>();
+            GridGraph map = new GridGraph(_width, _length)
+            {
+                Walls = new List<Vector2>(),
+                Forests = new List<Vector2>()
+            };
 
             _path.Add(_points[_rawPath[0]]);
             for (int e = 1; e < _rawPath.Count; e++)

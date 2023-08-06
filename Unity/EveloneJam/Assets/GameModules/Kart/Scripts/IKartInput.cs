@@ -2,7 +2,6 @@
 {
     public interface IKartInput
     {
-        bool IsPlayer { get; }
         float GetHorizontal();
         float GetVertical();
 

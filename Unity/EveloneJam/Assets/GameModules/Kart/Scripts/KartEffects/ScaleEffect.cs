@@ -12,7 +12,9 @@ namespace Project.Kart
         {
             base.Activate(kartController);
 
-            kartController.Model.DOScale(Vector3.one * _scale, 0.3f).OnComplete(() => kartController.ForwardAccel *= _scale);
+            kartController.Model.DOScale(Vector3.one * _scale, 0.3f).OnComplete(() => {
+                kartController.ForwardAccel *= _scale;
+                });
         }
 
         public override void Deactivate(KartController kartController)

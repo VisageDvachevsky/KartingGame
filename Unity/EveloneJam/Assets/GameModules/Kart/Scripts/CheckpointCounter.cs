@@ -3,6 +3,7 @@ using UnityEngine;
 using Zenject;
 using Project.Laps;
 using Project.Kart;
+using Project.GameFlow;
 
 namespace Project.RoadGeneration
 {
@@ -20,10 +21,10 @@ namespace Project.RoadGeneration
         public int LapCount { get; private set; }
         public int LapsFinished { get; private set; }
         public bool Finished => LapsFinished >= LapCount;
+
         public int CurrentCheckpoint { get; private set; }
         public int AbsoluteCheckpointIndex => LapsFinished * _checkpointsAmount + CurrentCheckpoint;
         public RoadCheckpoint NextCheckpoint => _roadProvider.Checkpoints[(CurrentCheckpoint + 1) % _roadProvider.Checkpoints.Count];
-
 
         [Inject]
         private void Construct(MapSettings mapSettings, IRoadProvider roadProvider, ScoreSystem scoreSystem)
@@ -64,24 +65,22 @@ namespace Project.RoadGeneration
         public void ReachCheckpoint(int index)
         {
             if (index == 0 && CurrentCheckpoint == _checkpointsAmount - 1)
-            {
                 FinishLap();
-            }
 
-            if (index == 0 || index > CurrentCheckpoint) {
-                Debug.Log(index);
+            if (index == 0 || index > CurrentCheckpoint)
                 CurrentCheckpoint = index;
-            }
         }   
 
         private void FinishLap()
         {
             LapsFinished++;
+
             if (LapsFinished >= LapCount)
             {
                 LapsFinished = LapCount;
                 AllLapsFinished?.Invoke();
             }
+
             LapFinished?.Invoke(LapsFinished);
         }
     }

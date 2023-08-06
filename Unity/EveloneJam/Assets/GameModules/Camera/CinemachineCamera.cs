@@ -18,5 +18,9 @@ namespace Project.Camera
             _camera.Follow = target;
             _camera.LookAt = target;
         }
+
+        public void Shake()
+        {
+        }
     }
 }

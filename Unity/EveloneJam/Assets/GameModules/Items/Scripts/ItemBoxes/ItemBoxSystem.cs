@@ -9,30 +9,31 @@ namespace Project.Interaction
 {
     public class ItemBoxSystem : MonoBehaviour
     {
-        private const float ItemSelectionTime = 3f;
+        public const float ItemSelectionTime = 3f;
 
+        private DiContainer _container;
         private ItemConfig _itemConfig;
         private ScoreSystem _scoreSystem;
 
         public event Action<Item> ItemActivated;
+
         public KartController Kart { get; set; }
         public Item CurrentItem { get; private set; } = null;
         public bool CanHaveNewItem { get; private set; } = true;
         public bool IsSelectingItem { get; private set; } = false;
 
         [Inject]
-        private void Construct(ScoreSystem scoreSystem, ItemConfig itemConfig)
+        private void Construct(DiContainer container, ScoreSystem scoreSystem, ItemConfig itemConfig)
         {
+            _container = container;
             _itemConfig = itemConfig;
             _scoreSystem = scoreSystem;
         }
 
         public void SelectNewItem()
         {
-            if (!CanHaveNewItem)
-            {
+            if (!CanHaveNewItem || Kart.EffectHandler.CurrentEffect != null)
                 return;
-            }
 
             StartCoroutine(ItemSelectionRoutine());
         }
@@ -51,11 +52,15 @@ namespace Project.Interaction
 
         public void ActivateCurrentItem()
         {
-            if (CurrentItem != null)
-            {
-                CurrentItem.Activate(Kart);
+            if (CurrentItem == null)
+                return;
 
-                ItemActivated?.Invoke(CurrentItem);
+            Item item = _container.InstantiatePrefabForComponent<Item>(CurrentItem);
+            item.transform.position = transform.position;
+            if (item.TryActivate(Kart))
+            {
+                ItemActivated?.Invoke(item);
+
                 CurrentItem = null;
                 CanHaveNewItem = true;
             }

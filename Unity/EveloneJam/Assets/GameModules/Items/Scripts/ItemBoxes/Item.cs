@@ -5,6 +5,6 @@ namespace Project.Interaction
 {
     public abstract class Item : MonoBehaviour
     {
-        public abstract void Activate(KartController owner);
+        public abstract bool TryActivate(KartController owner);
     }
 }

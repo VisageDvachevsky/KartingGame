@@ -156,6 +156,7 @@ GameObject:
   - component: {fileID: 1230252018162986987}
   - component: {fileID: 1230252018162986984}
   - component: {fileID: 1230252018162986986}
+  - component: {fileID: 5246280008402067988}
   - component: {fileID: 1230252018162986989}
   m_Layer: 0
   m_Name: RoadGenerator
@@ -221,10 +222,28 @@ MonoBehaviour:
   - {fileID: 688617276838490137, guid: a34469498081c6d4eb36aaf3b4d82959, type: 3}
   _combineRoadColliders: 1
   _gridChunkSize: 64
-  _pointsOnSegment: 5
   _pointChance: 0.5
   _pointPrefab: {fileID: 308687690227100696, guid: 67924389ad721cf459949e7806185b3d,
     type: 3}
+  _itemboxChance: 0.85
+  _itemBoxPrefab: {fileID: 0}
+--- !u!114 &5246280008402067988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230252018162986985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9989c6890fc017e46bcddea40f814b18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _terrain: {fileID: 0}
+  _roadBuilder: {fileID: 1230252018162986986}
+  _noiseScale: 0.1
+  _height: 2.5
+  _borderSize: 2
 --- !u!64 &1230252018162986989
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -328,6 +347,7 @@ MonoBehaviour:
   _playerInput: {fileID: 1230252017691030488}
   _roadBuilder: {fileID: 1230252018162986986}
   _scoreSystem: {fileID: 255811719727815570}
+  _itemConfig: {fileID: 0}
   _camera: {fileID: 0}
 --- !u!114 &5871132368573521809
 MonoBehaviour:
@@ -342,6 +362,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <LapCount>k__BackingField: 3
+  <BotCount>k__BackingField: 4
 --- !u!1 &7564019943890335678
 GameObject:
   m_ObjectHideFlags: 0
@@ -387,6 +408,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _roadBuilder: {fileID: 1230252018162986986}
+  _terrainGenerator: {fileID: 5246280008402067988}
   _kartSpawner: {fileID: 1230252017261216252}
   _countdownDisplay: {fileID: 0}
   _finishMenu: {fileID: 0}

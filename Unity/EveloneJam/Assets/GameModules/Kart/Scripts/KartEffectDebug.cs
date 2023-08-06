@@ -9,9 +9,7 @@ namespace Project.Kart
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
                 GetComponent<KartController>().EffectHandler.AddEffect(_effect);
-            }
         }
     }
 }

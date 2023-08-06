@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 7fef5a8d032881a488d66dd5cc0cff99
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _renderer: {instanceID: 0}
+  - _white: {instanceID: 0}
+  - _black: {instanceID: 0}
+  - _red: {instanceID: 0}
+  - _yellow: {instanceID: 0}
+  - _green: {instanceID: 0}
+  - _blue: {instanceID: 0}
+  - _lightBlue: {instanceID: 0}
+  - _purple: {instanceID: 0}
+  - _gray: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

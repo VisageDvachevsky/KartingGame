@@ -1,5 +1,4 @@
 using ARTEX.Procedural.Racing;
-using Project.Coins;
 using Project.Interaction;
 using Project.Utils;
 using System;
@@ -22,17 +21,14 @@ namespace Project.RoadGeneration
         [SerializeField] private Road[] _prefabs;
         [SerializeField] private bool _combineRoadColliders = true;
         [SerializeField] private float _gridChunkSize = 8f;
-        [SerializeField] private int _pointsOnSegment = 10;
-        [SerializeField] private float _pointChance = 0.85f;
+        [SerializeField] private int _coinAmount = 2;
         [SerializeField] private Coin _pointPrefab;
-        [SerializeField] private float _itemboxChance = 0.85f;
+        [SerializeField] private int _itemboxAmount = 2;
         [SerializeField] private ItemBox _itemBoxPrefab;
 
         // Private Variables
         private DiContainer _container;
         private MeshCollider _meshCollider;
-        private PseudoRandom _coinRandomizer;
-        private PseudoRandom _itemBoxRandomizer;
         private List<Road> _starts = new List<Road>();
         private List<Road> _straights = new List<Road>();
         private List<Road> _leftTurns = new List<Road>();
@@ -41,6 +37,7 @@ namespace Project.RoadGeneration
         private List<Road> _spawnedRoads = new List<Road>();
         private List<RoadCheckpoint> _checkpoints = new List<RoadCheckpoint>();
         private List<Transform> _kartSpawnpoints = new List<Transform>();
+        private bool[,] _roadMask;
         private int _startRoadIndex = -1;
         private float _rotation = 0;
 
@@ -48,6 +45,9 @@ namespace Project.RoadGeneration
         public IReadOnlyList<Road> SpawnedRoads => _spawnedRoads;
         public IReadOnlyList<RoadCheckpoint> Checkpoints => _checkpoints;
         public IReadOnlyList<Transform> KartSpawnpoints => _kartSpawnpoints;
+        public float Width => _generator.Width * _gridChunkSize;
+        public float Length => _generator.Length * _gridChunkSize;
+        public float ChunkSize => _gridChunkSize;
 
         public event Action OnRoadCreated;
 
@@ -59,8 +59,6 @@ namespace Project.RoadGeneration
 
         private void Awake()
         {
-            _coinRandomizer = new PseudoRandom(_pointChance, 0.05f);
-            _itemBoxRandomizer = new PseudoRandom(_itemboxChance, 0.05f);
             _meshCollider = GetComponent<MeshCollider>();
             FindRoadPrefabs();
         }
@@ -95,19 +93,31 @@ namespace Project.RoadGeneration
             OnRoadCreated?.Invoke();
         }
 
+        public bool HasRoadAtPosition(Vector3 position)
+        {
+            position /= _gridChunkSize;
+
+            int x = Mathf.RoundToInt(position.x);
+            int z = Mathf.RoundToInt(position.z);
+
+            if (x < 0 || x >= _generator.Width || z < 0 || z >= _generator.Length) return false;
+
+            return _roadMask[x, z];
+        }
+
         private void DestroySpawnedRoads()
         {
             foreach (var spawnedRoad in _spawnedRoads)
             {
                 Destroy(spawnedRoad.gameObject);
             }
-            _coinRandomizer.Reset();
-            _itemBoxRandomizer.Reset();
 
             _spawnedRoads.Clear();
             _checkpoints.Clear();
             _kartSpawnpoints.Clear();
             _startRoadIndex = -1;
+
+            _roadMask = new bool[_generator.Width, _generator.Length];
         }
 
         private void SpawnMeshes()
@@ -125,10 +135,12 @@ namespace Project.RoadGeneration
                 Road road = InstantiateRoad(prefab, currentPosition);
 
                 _spawnedRoads.Add(road);
-                GeneratePickups(road);
+                
 
                 lastDirection = currentDirection;
                 _rotation += angle;
+
+                _roadMask[_path[i].x, _path[i].z] = true;
             }
 
             if (_startRoadIndex == -1) throw new Exception("No start created");
@@ -141,7 +153,8 @@ namespace Project.RoadGeneration
                 newRoads.Add(_spawnedRoads[(i + _startRoadIndex) % _spawnedRoads.Count]);
             }
             _spawnedRoads = newRoads;
-            
+
+            GeneratePickups();
 
             for (int i = 0; i < _spawnedRoads.Count; i++)
             {
@@ -199,34 +212,49 @@ namespace Project.RoadGeneration
         private Road InstantiateRoad(Road prefab, Vector3 position)
         {
             Road road = Instantiate(prefab, transform);
-            road.transform.position = position;
-            road.transform.rotation = Quaternion.Euler(0, _rotation, 0);
+            road.transform.SetPositionAndRotation(position, Quaternion.Euler(0, _rotation, 0));
+
             return road;
         }
 
-        private void GeneratePickups(Road road)
+        private void GeneratePickups()
         {
-            BasePickup pickupPrefab = null;
-            if (_itemBoxRandomizer.Decide()) pickupPrefab = _itemBoxPrefab;
-            else if (_coinRandomizer.Decide()) pickupPrefab = _pointPrefab;
+            List<Road> roadsWithPickupSpawnpoints = _spawnedRoads.Where(x => x.Pickups.Count > 0).ToList();
+            bool spawnCoin = true;
+            int count = 0;
+            HashSet<int> processed = new HashSet<int>();
 
-            if (pickupPrefab == null) return;
-
-            for (int i = 0; i < road.Pickups.Count; i++)
+            while (count < Mathf.Min(_coinAmount + _itemboxAmount, roadsWithPickupSpawnpoints.Count))
             {
+                int rIndex = Random.Range(0, roadsWithPickupSpawnpoints.Count);
+                if (processed.Contains(rIndex))
+                    continue;
 
-                Vector3 pointPosition = road.Pickups[i].position;
-                pointPosition.y = 1.0f;
+                processed.Add(rIndex);
 
-                GameObject point = _container.InstantiatePrefab(pickupPrefab);
-                point.transform.position = pointPosition;
-                point.transform.parent = road.transform;
+                count++;
+                BasePickup pickupPrefab = spawnCoin ? _pointPrefab : _itemBoxPrefab;
+                spawnCoin = !spawnCoin;
+
+                Road road = roadsWithPickupSpawnpoints[rIndex];
+
+                for (int i = 0; i < road.Pickups.Count; i++)
+                {
+                    Vector3 pointPosition = road.Pickups[i].position;
+                    pointPosition.y = 1.0f;
+
+                    GameObject point = _container.InstantiatePrefab(pickupPrefab);
+                    point.transform.position = pointPosition;
+                    point.transform.parent = road.transform;
+                }
             }
+
+
         }
 
         private void CombineColliders()
         {
-            MeshCollider[] meshColliders = GetComponentsInChildren<MeshCollider>().Where(x => x.tag.Equals(ROAD_TAG)).ToArray();
+            MeshCollider[] meshColliders = GetComponentsInChildren<MeshCollider>().Where(x => x.CompareTag(ROAD_TAG)).ToArray();
             CombineInstance[] combine = new CombineInstance[meshColliders.Length];
 
             for (int i = 0; i < meshColliders.Length; i++)

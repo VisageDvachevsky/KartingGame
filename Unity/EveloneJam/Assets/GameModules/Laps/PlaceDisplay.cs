@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Project.Kart;
 using Project.RoadGeneration;
 using Project.Utils;
@@ -35,10 +36,10 @@ namespace Project.Laps
 
         private void Update()
         {
-            if (_checkpointCounter != null)
-            {
-                UpdatePlace();
-            }
+            if (_checkpointCounter == null)
+                return;
+
+            UpdatePlace();
         }
 
         private void SyncKart(KartController kart)
@@ -50,6 +51,7 @@ namespace Project.Laps
         {
             int place = -1;
             IReadOnlyList<ScoreSystem.ScoreData> scores = _scoreSystem.ScoreDatas;
+
             for (int i = 0; i < scores.Count; i++)
             {
                 if (scores[i].CheckpointCounter == _checkpointCounter)
@@ -61,7 +63,15 @@ namespace Project.Laps
 
             if (place != -1)
             {
-                _text.text = $"{place}{StringNumericUtils.GetOrdinalSuffix(place)}";
+                string newValue = $"{place}{StringNumericUtils.GetOrdinalSuffix(place)}";
+
+                if (newValue == _text.text)
+                    return;
+
+                _text.transform.DOComplete();
+                _text.transform.localScale = Vector3.one;
+                _text.transform.DOPunchScale(Vector3.one * 1.2f, .2f, 5, 1);
+                _text.text = newValue;
             }
         }
     }

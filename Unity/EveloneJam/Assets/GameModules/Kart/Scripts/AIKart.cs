@@ -14,6 +14,7 @@ namespace Project.Kart
         [SerializeField] private float _steerScaling = 0.2f;
         [SerializeField] private LayerMask _obstacleLayerMask;
         [SerializeField] private float _avoidActionCooldown = 2f;
+        [SerializeField] private float _maxUseTime = 10f;
 
         [SerializeField] private RaycastData[] _raycasts = new RaycastData[4];
 
@@ -27,8 +28,8 @@ namespace Project.Kart
         private IRoadProvider _roadProvider;
         private IInputLock _inputLock;
         private float _nextAvoidActionTime = 0f;
-
-        public bool IsPlayer => false;
+        private float _useTime = 0;
+        private float _useStartTime = -1;
 
         [Inject]
         private void Construct(IRoadProvider roadProvider, IInputLock inputLock)
@@ -48,6 +49,12 @@ namespace Project.Kart
         private void Update()
         {
             _currentHorizontal = Mathf.Lerp(_currentHorizontal, _targetHorizontal, Time.deltaTime * 10f);
+
+            if (_kart.ItemBoxSystem.CurrentItem != null && _useStartTime == -1)
+            {
+                _useTime = Random.Range(0f, _maxUseTime);
+                _useStartTime = Time.time;
+            }
         }
 
         private void FindAndSetupRaycastOrigins()
@@ -236,7 +243,14 @@ namespace Project.Kart
 
         public bool GetItemButtomDown()
         {
-            return true;
+            if (Time.time - _useStartTime >= _useTime)
+            {
+                _useStartTime = -1;
+                _useTime = 0;
+                return true;
+            }
+
+            return false;
         }
     }
 

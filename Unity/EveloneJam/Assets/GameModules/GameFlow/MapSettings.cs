@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Project.Laps
+namespace Project.GameFlow
 {
     public class MapSettings : MonoBehaviour
     {

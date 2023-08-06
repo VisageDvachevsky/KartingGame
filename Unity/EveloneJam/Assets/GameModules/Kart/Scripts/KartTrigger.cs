@@ -25,34 +25,22 @@ namespace Project.Kart
             HandleCollision(collision);
         }
 
-
         private void HandleTrigger(Collider other)
         {
             if (other.TryGetComponent(out IPickup obj))
-            {
-                if (!obj.PlayerOnly || Kart.IsPlayer)
-                {
                     obj.Pickup(Kart);
-                }
-            }
 
             if (other.TryGetComponent<RoadCheckpoint>(out var checkpoint))
-            {
                 Kart.CheckpointCounter.ReachCheckpoint(checkpoint.Index);
-            }
         }
 
         private void HandleCollision(Collision collision)
         {
             if (collision.transform.TryGetComponent(out KartTrigger _))
-            {
                 Kart.CollideWithOtherKart(collision.contacts[0].normal, collision.relativeVelocity);
-            }
 
             if (collision.transform.TryGetComponent(out RoadGuard _))
-            {
                 Kart.CollideWithRoadGuard(collision.contacts[0].normal, collision.relativeVelocity);
-            }
         }
     }
 }

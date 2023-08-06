@@ -6,5 +6,6 @@ namespace Project.Camera
     {
         float FOV { get; set; }
         void Follow(Transform target);
+        void Shake();
     }
 }

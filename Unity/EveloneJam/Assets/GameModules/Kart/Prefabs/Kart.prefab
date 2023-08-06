@@ -78,6 +78,7 @@ GameObject:
   - component: {fileID: 5783928464250197893}
   - component: {fileID: 1812526417306264640}
   - component: {fileID: 4843236969599340535}
+  - component: {fileID: 4378889031583192937}
   m_Layer: 0
   m_Name: Kart
   m_TagString: Car
@@ -139,23 +140,22 @@ MonoBehaviour:
   _groundMask:
     serializedVersion: 2
     m_Bits: 4294967291
-  _maxBoostTime: 5
-  _boostAccumulationSpeed: 0.5
-  ForwardAccel: 8
+  _maxBoostTime: 1.5
+  _boostAccumulationSpeed: 0.2
+  BoostAccelMultiplier: 1.25
+  ForwardAccel: 7
   ReverseAccel: 4
-  DriftSteering: 2.1
+  DriftSteering: 2.2
   DriftAccel: 10
-  BoostAccelMultiplier: 1.5
-  AutoStopping: 0.001
-  GravityForce: 1
-  TurningStrength: 60
-  TurningDebaf: 0.7
   JumpHeight: 0.6
-  DriftAngle: 20
-  DragOnGround: 3
-  MinHitSpeed: 15
+  DriftAngle: 25
+  TurningStrength: 60
+  TurningDebaf: 1
   HitKnockbackStrength: 3
   SpinningAngularSpeed: 720
+  DragOnGround: 3
+  GravityForce: 1
+  MinHitSpeed: 15
 --- !u!114 &6290242605083735311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,6 +177,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   _avoidActionCooldown: 2
+  _maxUseTime: 10
   _raycasts:
   - origin: {fileID: 0}
     distance: 5
@@ -234,6 +235,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474ea99385692204cae42a632522e43b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4378889031583192937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3565155705354963856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e9e5a2b7fe41e84db8eabddc159cf13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &3565155705397701266

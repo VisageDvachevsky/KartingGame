@@ -2,7 +2,7 @@ using Project.Kart;
 using UnityEngine;
 using Zenject;
 
-namespace Project.Coins
+namespace Project.Interaction
 {
     public class KartCoinBonus : MonoBehaviour
     {
@@ -14,19 +14,23 @@ namespace Project.Coins
         private void Construct(CoinSystem coinSystem)
         {
             _coinSystem = coinSystem;
+        }
+
+        private void OnEnable()
+        {
             _coinSystem.CoinsAmountChanged += UpdateBonus;
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
-            if (_coinSystem != null) _coinSystem.CoinsAmountChanged -= UpdateBonus;
+            _coinSystem.CoinsAmountChanged -= UpdateBonus;
         }
 
         private void UpdateBonus(int amount)
         {
             if (amount % 5 == 0)
             {
-                _kart.RemainingBoostTime += 0.5f;
+                _kart.RemainingBoostTime = _kart.MaxBoostTime;
             }
         }
     }
